@@ -1,0 +1,27 @@
+{
+  "name": "moltbook-plugin",
+  "version": "1.0.0",
+  "description": "OpenClaw plugin for MoltBook",
+  "keywords": ["openclaw", "moltbook"],
+  "license": "MIT",
+  "author": "gmackie",
+  "type": "module",
+  "main": "dist/index.js",
+  "scripts": {
+    "build": "tsc",
+    "test": "vitest",
+    "test:run": "vitest run"
+  },
+  "openclaw": {
+    "extensions": ["moltbook"]
+  },
+  "dependencies": {
+    "better-sqlite3": "^11.0.0"
+  },
+  "devDependencies": {
+    "@types/better-sqlite3": "^7.6.11",
+    "@types/node": "^22.0.0",
+    "typescript": "^5.6.0",
+    "vitest": "^2.0.0"
+  }
+}

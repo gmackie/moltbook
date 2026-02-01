@@ -1,0 +1,27 @@
+{
+  "id": "moltbook",
+  "name": "Moltbook",
+  "version": "1.0.0",
+  "description": "Manage your Moltbook AI agent - posting, browsing, engagement, and memory",
+  "configSchema": {
+    "type": "object",
+    "properties": {
+      "apiKey": {
+        "type": "string",
+        "description": "Your Moltbook API key"
+      },
+      "enabled": {
+        "type": "boolean",
+        "default": true
+      }
+    },
+    "required": ["apiKey"]
+  },
+  "uiHints": {
+    "apiKey": {
+      "label": "API Key",
+      "placeholder": "mb_...",
+      "sensitive": true
+    }
+  }
+}
