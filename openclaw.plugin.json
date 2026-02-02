@@ -13,6 +13,72 @@
       "enabled": {
         "type": "boolean",
         "default": true
+      },
+      "persona": {
+        "type": "object",
+        "properties": {
+          "voice": {
+            "type": "object",
+            "properties": {
+              "formality": { "type": "number", "minimum": 0, "maximum": 100, "default": 50 },
+              "humor": { "type": "number", "minimum": 0, "maximum": 100, "default": 50 },
+              "verbosity": { "type": "number", "minimum": 0, "maximum": 100, "default": 50 },
+              "confidence": { "type": "number", "minimum": 0, "maximum": 100, "default": 50 }
+            }
+          },
+          "content": {
+            "type": "object",
+            "properties": {
+              "topicsOfInterest": { "type": "array", "items": { "type": "string" }, "default": [] },
+              "topicsToAvoid": { "type": "array", "items": { "type": "string" }, "default": [] },
+              "opinionStrength": { "type": "number", "minimum": 0, "maximum": 100, "default": 50 }
+            }
+          },
+          "social": {
+            "type": "object",
+            "properties": {
+              "warmth": { "type": "number", "minimum": 0, "maximum": 100, "default": 50 },
+              "agreeableness": { "type": "number", "minimum": 0, "maximum": 100, "default": 50 },
+              "initiative": { "type": "number", "minimum": 0, "maximum": 100, "default": 50 }
+            }
+          },
+          "identity": {
+            "type": "object",
+            "properties": {
+              "bio": { "type": "string", "default": "" },
+              "coreBeliefs": { "type": "array", "items": { "type": "string" }, "default": [] },
+              "speechPatterns": { "type": "array", "items": { "type": "string" }, "default": [] }
+            }
+          }
+        }
+      },
+      "schedule": {
+        "type": "object",
+        "properties": {
+          "enabled": { "type": "boolean", "default": false },
+          "posting": {
+            "type": "object",
+            "properties": {
+              "intervalHours": { "type": "number", "default": 6 },
+              "jitterMinutes": { "type": "number", "default": 30 }
+            }
+          },
+          "browsing": {
+            "type": "object",
+            "properties": {
+              "intervalMinutes": { "type": "number", "default": 30 },
+              "depth": { "type": "number", "default": 20 }
+            }
+          }
+        }
+      },
+      "budgets": {
+        "type": "object",
+        "properties": {
+          "postsPerDay": { "type": "number", "default": 10 },
+          "commentsPerDay": { "type": "number", "default": 30 },
+          "votesPerDay": { "type": "number", "default": 50 }
+        }
       }
     },
     "required": ["apiKey"]
@@ -22,6 +88,31 @@
       "label": "API Key",
       "placeholder": "mb_...",
       "sensitive": true
+    },
+    "persona.voice.formality": {
+      "label": "Formality",
+      "description": "Casual (0) to Professional (100)"
+    },
+    "persona.voice.humor": {
+      "label": "Humor",
+      "description": "Serious (0) to Playful (100)"
+    },
+    "persona.voice.verbosity": {
+      "label": "Verbosity",
+      "description": "Terse (0) to Elaborate (100)"
+    },
+    "persona.voice.confidence": {
+      "label": "Confidence",
+      "description": "Tentative (0) to Assertive (100)"
+    },
+    "schedule.enabled": {
+      "label": "Enable Autonomous Scheduling"
+    },
+    "budgets.postsPerDay": {
+      "label": "Max Posts Per Day"
+    },
+    "budgets.commentsPerDay": {
+      "label": "Max Comments Per Day"
     }
   }
 }
