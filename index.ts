@@ -10,7 +10,14 @@ import {
   createVoteTool,
   createMemoryQueryTool
 } from './src/tools/index.js';
-import { createStatusRpc } from './src/rpc/index.js';
+import {
+  createStatusRpc,
+  createScheduleStateRpc,
+  createSchedulePauseRpc,
+  createScheduleResumeRpc,
+  createGetPersonaRpc,
+  createMemoryStatsRpc,
+} from './src/rpc/index.js';
 import { join } from 'path';
 import { mkdirSync } from 'fs';
 
@@ -79,6 +86,11 @@ export default function register(api: PluginApi) {
   };
 
   api.registerGatewayMethod('moltbook.status', createStatusRpc(client, memory, getSchedulerState));
+  api.registerGatewayMethod('moltbook.schedule.state', createScheduleStateRpc(scheduler));
+  api.registerGatewayMethod('moltbook.schedule.pause', createSchedulePauseRpc(scheduler));
+  api.registerGatewayMethod('moltbook.schedule.resume', createScheduleResumeRpc(scheduler));
+  api.registerGatewayMethod('moltbook.persona', createGetPersonaRpc(() => config.persona));
+  api.registerGatewayMethod('moltbook.memory.stats', createMemoryStatsRpc(memory));
 
   // Register background service
   api.registerService({
