@@ -5,6 +5,7 @@ import { StatusCard } from './components/StatusCard';
 import { UsageCard } from './components/UsageCard';
 import { MemoryCard } from './components/MemoryCard';
 import { SchedulePanel } from './components/SchedulePanel';
+import { PersonaEditor } from './components/PersonaEditor';
 
 export default function App() {
   const [status, setStatus] = useState<StatusResponse | null>(null);
@@ -59,6 +60,7 @@ export default function App() {
           <UsageCard usage={status.usage} budgets={{ postsPerDay: 10, commentsPerDay: 30 }} />
           <MemoryCard memory={status.memory} />
           <SchedulePanel />
+          <PersonaEditor />
         </div>
       )}
     </div>
