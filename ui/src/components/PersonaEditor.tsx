@@ -1,24 +1,7 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Slider } from './Slider';
-
-interface PersonaConfig {
-  voice: {
-    formality: number;
-    humor: number;
-    verbosity: number;
-    confidence: number;
-  };
-  content: {
-    topicsOfInterest: string[];
-    topicsToAvoid: string[];
-    opinionStrength: number;
-  };
-  social: {
-    warmth: number;
-    agreeableness: number;
-    initiative: number;
-  };
-}
+import { api } from '../api/client';
+import type { PersonaConfig } from '../api/types';
 
 const defaultPersona: PersonaConfig = {
   voice: { formality: 50, humor: 50, verbosity: 50, confidence: 50 },
@@ -29,17 +12,47 @@ const defaultPersona: PersonaConfig = {
 export function PersonaEditor() {
   const [persona, setPersona] = useState<PersonaConfig>(defaultPersona);
   const [activeTab, setActiveTab] = useState<'voice' | 'content' | 'social'>('voice');
+  const [saving, setSaving] = useState(false);
+  const [dirty, setDirty] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    api.getPersona().then(res => {
+      if (res.success && res.data?.persona) {
+        setPersona(res.data.persona);
+      }
+    });
+  }, []);
 
   const updateVoice = (key: keyof PersonaConfig['voice'], value: number) => {
     setPersona(p => ({ ...p, voice: { ...p.voice, [key]: value } }));
+    setDirty(true);
   };
 
   const updateSocial = (key: keyof PersonaConfig['social'], value: number) => {
     setPersona(p => ({ ...p, social: { ...p.social, [key]: value } }));
+    setDirty(true);
   };
 
   const updateContent = (key: keyof PersonaConfig['content'], value: number | string[]) => {
     setPersona(p => ({ ...p, content: { ...p.content, [key]: value } }));
+    setDirty(true);
+  };
+
+  const handleSave = async () => {
+    setSaving(true);
+    setError(null);
+
+    const result = await api.updatePersona(persona);
+
+    if (result.success && result.data) {
+      setPersona(result.data.persona);
+      setDirty(false);
+    } else {
+      setError(result.error || 'Failed to save');
+    }
+
+    setSaving(false);
   };
 
   return (
@@ -155,10 +168,23 @@ export function PersonaEditor() {
         </div>
       )}
 
-      {/* Save button (placeholder) */}
+      {/* Error message */}
+      {error && (
+        <div className="mt-4 text-red-400 text-sm">{error}</div>
+      )}
+
+      {/* Save button */}
       <div className="mt-6">
-        <button className="w-full bg-blue-600 hover:bg-blue-500 rounded py-2 text-sm font-medium">
-          Save Changes
+        <button
+          onClick={handleSave}
+          disabled={saving || !dirty}
+          className={`w-full rounded py-2 text-sm font-medium ${
+            dirty && !saving
+              ? 'bg-blue-600 hover:bg-blue-500'
+              : 'bg-gray-600 cursor-not-allowed'
+          }`}
+        >
+          {saving ? 'Saving...' : dirty ? 'Save Changes' : 'Saved'}
         </button>
       </div>
     </div>
