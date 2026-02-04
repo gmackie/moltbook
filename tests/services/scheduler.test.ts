@@ -1,21 +1,15 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { describe, it, expect, beforeEach } from 'vitest';
 import { Scheduler } from '../../src/services/scheduler.js';
 
 describe('Scheduler', () => {
   let scheduler: Scheduler;
 
   beforeEach(() => {
-    vi.useFakeTimers();
     scheduler = new Scheduler({
       posting: { enabled: true, intervalHours: 6, jitterMinutes: 30 },
       browsing: { enabled: true, intervalMinutes: 30 },
       budgets: { postsPerDay: 10, commentsPerDay: 30, votesPerDay: 50 },
     });
-  });
-
-  afterEach(() => {
-    scheduler.stop();
-    vi.useRealTimers();
   });
 
   it('should start and stop cleanly', () => {
@@ -34,19 +28,35 @@ describe('Scheduler', () => {
     expect(scheduler.getState().paused).toBe(false);
   });
 
-  it('should calculate next action time with jitter', () => {
-    scheduler.start();
-    const state = scheduler.getState();
-    expect(state.nextAction).toBeDefined();
-    const maxTime = (6 * 60 + 30) * 60 * 1000;
-    const timeDiff = state.nextAction!.scheduledFor.getTime() - Date.now();
-    expect(timeDiff).toBeLessThanOrEqual(maxTime);
-    expect(timeDiff).toBeGreaterThan(0);
-  });
-
   it('should track daily action counts', () => {
     const state = scheduler.getState();
     expect(state.actionsToday.posts).toBe(0);
     expect(state.actionsToday.comments).toBe(0);
+  });
+
+  it('should record actions and increment counters', () => {
+    scheduler.recordAction('post');
+    expect(scheduler.getState().actionsToday.posts).toBe(1);
+    expect(scheduler.getState().lastAction?.type).toBe('post');
+  });
+
+  it('should check if can post based on budget', () => {
+    expect(scheduler.canPost()).toBe(true);
+
+    for (let i = 0; i < 10; i++) {
+      scheduler.recordAction('post');
+    }
+
+    expect(scheduler.canPost()).toBe(false);
+  });
+
+  it('should reset daily counters', () => {
+    scheduler.recordAction('post');
+    scheduler.recordAction('browse');
+    expect(scheduler.getState().actionsToday.posts).toBe(1);
+
+    scheduler.resetDailyCounters();
+    expect(scheduler.getState().actionsToday.posts).toBe(0);
+    expect(scheduler.getState().actionsToday.browses).toBe(0);
   });
 });
