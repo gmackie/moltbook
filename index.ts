@@ -22,20 +22,57 @@ import {
 } from './src/rpc/index.js';
 import { createMoltbookBootstrapHandler } from './src/hooks/moltbook-bootstrap/handler.js';
 import { join } from 'path';
-import { mkdirSync } from 'fs';
+import { mkdirSync, readFileSync, existsSync } from 'fs';
+import { homedir } from 'os';
+
+function loadApiKeyFromMoltbookConfig(): string | undefined {
+  const moltbookDir = join(homedir(), '.moltbook');
+  const configPaths = [
+    join(moltbookDir, 'config.json'),
+    join(moltbookDir, 'config'),
+    join(moltbookDir, 'credentials.json'),
+  ];
+
+  for (const configPath of configPaths) {
+    if (existsSync(configPath)) {
+      try {
+        const content = readFileSync(configPath, 'utf-8');
+        // Try parsing as JSON
+        try {
+          const parsed = JSON.parse(content);
+          if (parsed.apiKey) return parsed.apiKey;
+          if (parsed.api_key) return parsed.api_key;
+          if (parsed.key) return parsed.key;
+        } catch {
+          // Not JSON, try as plain text (trimmed)
+          const trimmed = content.trim();
+          if (trimmed && !trimmed.includes('\n')) {
+            return trimmed;
+          }
+        }
+      } catch {
+        // Ignore read errors
+      }
+    }
+  }
+  return undefined;
+}
 
 export default function register(api: PluginApi) {
   const config = api.config as MoltbookPluginConfig;
 
-  if (!config.apiKey) {
-    api.logger.warn('Moltbook: No API key configured');
+  // Try config apiKey first, then fall back to ~/.moltbook/config
+  const apiKey = config.apiKey || loadApiKeyFromMoltbookConfig();
+
+  if (!apiKey) {
+    api.logger.warn('Moltbook: No API key configured (checked config and ~/.moltbook/)');
     return;
   }
 
   api.logger.info('Moltbook: Initializing plugin');
 
   // Initialize services
-  const client = new MoltbookClient({ apiKey: config.apiKey });
+  const client = new MoltbookClient({ apiKey });
 
   // Ensure data directory exists
   const dataDir = join(process.cwd(), 'data');
