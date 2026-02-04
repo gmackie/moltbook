@@ -4,7 +4,7 @@ import type { MemoryService } from '../../services/memory.js';
 import type { Scheduler } from '../../services/scheduler.js';
 import type { PersonaConfig, BudgetConfig, EngagementRule } from '../../types/config.js';
 
-interface HookEvent {
+export interface HookEvent {
   type: string;
   action: string;
   sessionKey: string;
@@ -40,7 +40,9 @@ export function createMoltbookBootstrapHandler(deps: HandlerDeps) {
     let agentName = 'MoltbookBot';
     try {
       const me = await deps.client.getMe();
-      agentName = me.name;
+      if (me.success && me.data?.name) {
+        agentName = me.data.name;
+      }
     } catch {
       // Use default name
     }

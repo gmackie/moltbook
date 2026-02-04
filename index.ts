@@ -3,6 +3,7 @@ import type { MoltbookPluginConfig } from './src/types/config.js';
 import { MoltbookClient } from './src/services/moltbook-client.js';
 import { MemoryService } from './src/services/memory.js';
 import { Scheduler } from './src/services/scheduler.js';
+import { SettingsService } from './src/services/settings.js';
 import {
   createBrowseTool,
   createPostTool,
@@ -16,8 +17,10 @@ import {
   createSchedulePauseRpc,
   createScheduleResumeRpc,
   createGetPersonaRpc,
+  createUpdatePersonaRpc,
   createMemoryStatsRpc,
 } from './src/rpc/index.js';
+import { createMoltbookBootstrapHandler } from './src/hooks/moltbook-bootstrap/handler.js';
 import { join } from 'path';
 import { mkdirSync } from 'fs';
 
@@ -42,8 +45,9 @@ export default function register(api: PluginApi) {
 
   const dbPath = join(dataDir, 'moltbook-memory.sqlite');
   const memory = new MemoryService(dbPath);
+  const settings = new SettingsService(dataDir);
 
-  // Initialize scheduler
+  // Initialize scheduler (state tracking only, no timers)
   const scheduler = new Scheduler({
     posting: {
       enabled: config.schedule?.enabled ?? false,
@@ -61,10 +65,17 @@ export default function register(api: PluginApi) {
     },
   });
 
-  // Set up scheduler action handler
-  scheduler.setActionHandler(async (action) => {
-    api.logger.info(`Moltbook: Executing ${action.type} action`);
-    // TODO: Trigger agent with appropriate context
+  // Helper to get merged persona config
+  const getPersona = () => {
+    if (!config.persona) return undefined;
+    return settings.getPersona(config.persona);
+  };
+
+  // Helper to get full config for hooks
+  const getFullConfig = () => ({
+    persona: getPersona()!,
+    budgets: config.budgets ?? { postsPerDay: 10, commentsPerDay: 30, votesPerDay: 50 },
+    engagement: config.engagement ?? { rules: [], trendInfluence: 50 },
   });
 
   // Register agent tools
@@ -89,8 +100,17 @@ export default function register(api: PluginApi) {
   api.registerGatewayMethod('moltbook.schedule.state', createScheduleStateRpc(scheduler));
   api.registerGatewayMethod('moltbook.schedule.pause', createSchedulePauseRpc(scheduler));
   api.registerGatewayMethod('moltbook.schedule.resume', createScheduleResumeRpc(scheduler));
-  api.registerGatewayMethod('moltbook.persona', createGetPersonaRpc(() => config.persona));
+  api.registerGatewayMethod('moltbook.persona', createGetPersonaRpc(getPersona));
+  api.registerGatewayMethod('moltbook.persona.update', createUpdatePersonaRpc(settings, getPersona));
   api.registerGatewayMethod('moltbook.memory.stats', createMemoryStatsRpc(memory));
+
+  // Create and export hook handler for external registration
+  const bootstrapHandler = createMoltbookBootstrapHandler({
+    getConfig: getFullConfig,
+    memory,
+    scheduler,
+    client,
+  });
 
   // Register background service
   api.registerService({
@@ -109,4 +129,11 @@ export default function register(api: PluginApi) {
   });
 
   api.logger.info('Moltbook: Plugin initialized successfully');
+
+  // Return hook handler for plugin hook registration
+  return {
+    hooks: {
+      'agent:bootstrap': bootstrapHandler,
+    },
+  };
 }
