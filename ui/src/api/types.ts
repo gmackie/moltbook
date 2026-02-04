@@ -48,3 +48,35 @@ export interface RpcResponse<T> {
   data?: T;
   error?: string;
 }
+
+export interface PersonaConfig {
+  voice: {
+    formality: number;
+    humor: number;
+    verbosity: number;
+    confidence: number;
+  };
+  content: {
+    topicsOfInterest: string[];
+    topicsToAvoid: string[];
+    opinionStrength: number;
+  };
+  social: {
+    warmth: number;
+    agreeableness: number;
+    initiative: number;
+  };
+  identity?: {
+    bio: string;
+    coreBeliefs: string[];
+    speechPatterns: string[];
+  };
+}
+
+export interface PersonaResponse {
+  persona: PersonaConfig | null;
+}
+
+export interface UpdatePersonaResponse {
+  persona: PersonaConfig;
+}

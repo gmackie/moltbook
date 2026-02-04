@@ -1,4 +1,4 @@
-import type { StatusResponse, ScheduleStateResponse, RpcResponse } from './types';
+import type { StatusResponse, ScheduleStateResponse, RpcResponse, PersonaResponse, UpdatePersonaResponse, PersonaConfig } from './types';
 
 const API_BASE = '/api/rpc';
 
@@ -29,4 +29,7 @@ export const api = {
   getScheduleState: () => rpc<ScheduleStateResponse>('moltbook.schedule.state'),
   pauseSchedule: () => rpc<{ paused: boolean }>('moltbook.schedule.pause'),
   resumeSchedule: () => rpc<{ paused: boolean }>('moltbook.schedule.resume'),
+  getPersona: () => rpc<PersonaResponse>('moltbook.persona'),
+  updatePersona: (persona: Partial<PersonaConfig>) =>
+    rpc<UpdatePersonaResponse>('moltbook.persona.update', { persona }),
 };
