@@ -26,12 +26,18 @@ import { mkdirSync, readFileSync, existsSync } from 'fs';
 import { homedir } from 'os';
 
 function loadApiKeyFromMoltbookConfig(): string | undefined {
-  const moltbookDir = join(homedir(), '.moltbook');
-  const configPaths = [
-    join(moltbookDir, 'config.json'),
-    join(moltbookDir, 'config'),
-    join(moltbookDir, 'credentials.json'),
+  const configDirs = [
+    join(homedir(), '.config', 'moltbook'),
+    join(homedir(), '.moltbook'),
   ];
+  const configPaths: string[] = [];
+  for (const dir of configDirs) {
+    configPaths.push(
+      join(dir, 'credentials.json'),
+      join(dir, 'config.json'),
+      join(dir, 'config'),
+    );
+  }
 
   for (const configPath of configPaths) {
     if (existsSync(configPath)) {

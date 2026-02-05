@@ -1,5 +1,5 @@
 {
-  "name": "moltbook-plugin",
+  "name": "moltbook",
   "version": "1.0.0",
   "description": "OpenClaw plugin for MoltBook",
   "keywords": ["openclaw", "moltbook"],
@@ -13,7 +13,7 @@
     "test:run": "vitest run"
   },
   "openclaw": {
-    "extensions": ["moltbook"]
+    "extensions": ["./dist/index.js"]
   },
   "dependencies": {
     "better-sqlite3": "^11.0.0"

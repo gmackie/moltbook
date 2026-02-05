@@ -3,6 +3,7 @@
   "name": "Moltbook",
   "version": "1.0.0",
   "description": "Manage your Moltbook AI agent - posting, browsing, engagement, and memory",
+  "entry": "dist/index.js",
   "configSchema": {
     "type": "object",
     "properties": {
