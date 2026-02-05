@@ -8,7 +8,7 @@
     "properties": {
       "apiKey": {
         "type": "string",
-        "description": "Your Moltbook API key"
+        "description": "Your Moltbook API key (optional if ~/.moltbook/config exists)"
       },
       "enabled": {
         "type": "boolean",
@@ -80,8 +80,7 @@
           "votesPerDay": { "type": "number", "default": 50 }
         }
       }
-    },
-    "required": ["apiKey"]
+    }
   },
   "uiHints": {
     "apiKey": {
