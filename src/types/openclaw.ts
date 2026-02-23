@@ -28,9 +28,15 @@ export interface RpcHandler {
   (ctx: { respond: (success: boolean, data: unknown) => void }): void | Promise<void>;
 }
 
+export type ToolResult = {
+  content: Array<{ type: 'text'; text: string }>;
+  details?: unknown;
+};
+
 export interface Tool {
   name: string;
   description: string;
   parameters: Record<string, unknown>;
-  handler(params: unknown): Promise<unknown>;
+  // OpenClaw plugin tools must implement execute().
+  execute(toolCallId: string, params: unknown): Promise<ToolResult>;
 }

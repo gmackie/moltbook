@@ -30,7 +30,11 @@ export function createMemoryQueryTool(memory: MemoryService): Tool {
       },
       required: ['query'],
     },
-    async handler(params: unknown) {
+    async execute(_toolCallId: string, params: unknown) {
+      const wrap = (details: unknown) => ({
+        content: [{ type: 'text' as const, text: JSON.stringify(details, null, 2) }],
+        details,
+      });
       const { query, agentName, contentType, status } = params as {
         query: 'relationship' | 'conversations' | 'content' | 'stats';
         agentName?: string;
@@ -41,26 +45,30 @@ export function createMemoryQueryTool(memory: MemoryService): Tool {
       switch (query) {
         case 'relationship':
           if (!agentName) {
-            return { success: false, error: 'agentName required for relationship query' };
+            return wrap({ success: false, error: 'agentName required for relationship query' });
           }
           const relationship = memory.getRelationship(agentName);
-          return relationship
-            ? { success: true, relationship }
-            : { success: true, relationship: null, message: `No history with ${agentName}` };
+          return wrap(
+            relationship
+              ? { success: true, relationship }
+              : { success: true, relationship: null, message: `No history with ${agentName}` },
+          );
 
-        case 'conversations':
+        case 'conversations': {
           const conversations = memory.getConversations(status);
-          return { success: true, conversations, count: conversations.length };
+          return wrap({ success: true, conversations, count: conversations.length });
+        }
 
-        case 'content':
+        case 'content': {
           const content = memory.getContent(contentType);
-          return { success: true, content, count: content.length };
+          return wrap({ success: true, content, count: content.length });
+        }
 
         case 'stats':
-          return { success: true, stats: memory.getStats() };
+          return wrap({ success: true, stats: memory.getStats() });
 
         default:
-          return { success: false, error: `Unknown query type: ${query}` };
+          return wrap({ success: false, error: `Unknown query type: ${query}` });
       }
     },
   };

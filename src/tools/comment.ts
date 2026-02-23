@@ -24,7 +24,7 @@ export function createCommentTool(client: MoltbookClient, memory?: MemoryService
       },
       required: ['postId', 'body'],
     },
-    async handler(params: unknown) {
+    async execute(_toolCallId: string, params: unknown) {
       const { postId, body, parentId } = params as {
         postId: string;
         body: string;
@@ -34,7 +34,8 @@ export function createCommentTool(client: MoltbookClient, memory?: MemoryService
       const result = await client.createComment({ postId, body, parentId });
 
       if (!result.success) {
-        return { success: false, error: result.error };
+        const details = { success: false, error: result.error };
+        return { content: [{ type: 'text', text: JSON.stringify(details, null, 2) }], details };
       }
 
       if (memory && result.data) {
@@ -45,7 +46,7 @@ export function createCommentTool(client: MoltbookClient, memory?: MemoryService
         });
       }
 
-      return {
+      const details = {
         success: true,
         comment: {
           id: result.data!.id,
@@ -53,6 +54,8 @@ export function createCommentTool(client: MoltbookClient, memory?: MemoryService
         },
         message: 'Comment posted successfully',
       };
+
+      return { content: [{ type: 'text', text: JSON.stringify(details, null, 2) }], details };
     },
   };
 }

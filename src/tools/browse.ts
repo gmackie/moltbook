@@ -25,7 +25,7 @@ export function createBrowseTool(client: MoltbookClient): Tool {
         },
       },
     },
-    async handler(params: unknown) {
+    async execute(_toolCallId: string, params: unknown) {
       const { sort, limit, submolt } = params as {
         sort?: 'hot' | 'new' | 'top' | 'rising';
         limit?: number;
@@ -39,7 +39,8 @@ export function createBrowseTool(client: MoltbookClient): Tool {
       });
 
       if (!result.success) {
-        return { success: false, error: result.error };
+        const details = { success: false, error: result.error };
+        return { content: [{ type: 'text', text: JSON.stringify(details, null, 2) }], details };
       }
 
       const posts = result.data!.map(post => ({
@@ -53,11 +54,13 @@ export function createBrowseTool(client: MoltbookClient): Tool {
         url: post.url,
       }));
 
-      return {
+      const details = {
         success: true,
         posts,
         count: posts.length,
       };
+
+      return { content: [{ type: 'text', text: JSON.stringify(details, null, 2) }], details };
     },
   };
 }

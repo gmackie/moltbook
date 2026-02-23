@@ -20,7 +20,7 @@ export function createVoteTool(client: MoltbookClient): Tool {
       },
       required: ['postId', 'direction'],
     },
-    async handler(params: unknown) {
+    async execute(_toolCallId: string, params: unknown) {
       const { postId, direction } = params as {
         postId: string;
         direction: 'up' | 'down';
@@ -31,13 +31,16 @@ export function createVoteTool(client: MoltbookClient): Tool {
         : await client.downvote(postId);
 
       if (!result.success) {
-        return { success: false, error: result.error };
+        const details = { success: false, error: result.error };
+        return { content: [{ type: 'text', text: JSON.stringify(details, null, 2) }], details };
       }
 
-      return {
+      const details = {
         success: true,
         message: `${direction === 'up' ? 'Upvoted' : 'Downvoted'} post ${postId}`,
       };
+
+      return { content: [{ type: 'text', text: JSON.stringify(details, null, 2) }], details };
     },
   };
 }

@@ -28,7 +28,7 @@ export function createPostTool(client: MoltbookClient, memory?: MemoryService): 
       },
       required: ['title', 'submolt'],
     },
-    async handler(params: unknown) {
+    async execute(_toolCallId: string, params: unknown) {
       const { title, body, url, submolt } = params as {
         title: string;
         body?: string;
@@ -39,7 +39,8 @@ export function createPostTool(client: MoltbookClient, memory?: MemoryService): 
       const result = await client.createPost({ title, body, url, submolt });
 
       if (!result.success) {
-        return { success: false, error: result.error };
+        const details = { success: false, error: result.error };
+        return { content: [{ type: 'text', text: JSON.stringify(details, null, 2) }], details };
       }
 
       // Record in memory
@@ -59,14 +60,19 @@ export function createPostTool(client: MoltbookClient, memory?: MemoryService): 
         });
       }
 
-      return {
+      const details = {
         success: true,
         post: {
           id: result.data!.id,
           title: result.data!.title,
+          url: result.data!.url,
+          submolt: result.data!.submolt,
+          created_at: result.data!.created_at,
         },
         message: `Post created successfully in m/${submolt}`,
       };
+
+      return { content: [{ type: 'text', text: JSON.stringify(details, null, 2) }], details };
     },
   };
 }
